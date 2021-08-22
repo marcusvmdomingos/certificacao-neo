@@ -1,0 +1,173 @@
+@{
+    ViewBag.Title = "Certificação Frontend";
+    Layout = "~/Views/Shared/Base/_Layout.cshtml";
+}
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.0/js/bootstrap.min.js"></script>
+      <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css">
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.0/jquery.validate.min.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.13.4/jquery.mask.min.js"></script>
+
+<div class="container-fluid">
+  <form id="certificado-form">
+    <div class="row">
+      <div class="col-md-6">
+        <label for="nome" class="">Nome</label>
+        <input class="form-control form-control-lg mb-3" type="text" id="nome" name="nome" required>
+      </div>
+      <div class="col-md-6">
+        <h3 id="nome-val" class="pt-4 mt-2">Valor</h3>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6">
+        <label for="email" class="">E-mail</label>
+        <input class="form-control form-control-lg mb-3" type="email" id="email" name="email" required>
+      </div>
+      <div class="col-md-6">
+        <h3 id="email-val" class="pt-4 mt-2">Valor</h3>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6">
+        <label for="telefone" class="">Telefone</label>
+        <input class="form-control form-control-lg mb-3" type="phone" id="telefone" name="telefone" required>
+      </div>
+      <div class="col-md-6">
+        <h3 id="telefone-val" class="pt-4 mt-2">Valor</h3>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6">
+        <label for="assunto" class="">Assunto</label>
+        <input class="form-control form-control-lg mb-3" type="text" id="assunto" name="assunto" required>
+      </div>
+      <div class="col-md-6">
+        <h3 id="assunto-val" class="pt-4 mt-2">Valor</h3>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6">
+        <label for="mensagem" class="">Mensagem</label>
+        <input class="form-control form-control-lg mb-3" type="textarea" id="mensagem" name="mensagem" required>
+      </div>
+      <div class="col-md-6">
+        <h3 id="mensagem-val" class="pt-4 mt-2">Valor</h3>
+      </div>
+    </div>
+    <button type="submit" class="btn btn-primary mb-3">Enviar</button>
+  </form>
+  <div class="row">
+    <div id="dados" class="col-md-6 d-none">
+      <h2>Dados da mensagem registrada</h2>
+      <div id="retorno"></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="registro" tabindex="-1" aria-labelledby="registro" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Mensagem registrada em sessão</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        A mensagem foi registrada na sessão do navegador. Você pode verificar as informações salvas.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+function printValue(id, value) {
+  inputId = "#" + id + "-val";
+  $(inputId).text(value);
+  inputId = "";
+}
+$("input").on("keyup", function() {
+  printValue($(this).attr('id'), $(this).val());
+})
+$('.telefone').each(function(i, el) {
+  $('#' + el.id).mask("(00) 00000-0000");
+})
+
+function updateMask(event) {
+  var $element = $('#' + this.id);
+  $(this).off('blur');
+  $element.unmask();
+  if (this.value.replace(/\D/g, '').length > 10) {
+    $element.mask("(00) 00000-0000");
+  } else {
+    $element.mask("(00) 0000-00009");
+  }
+  $(this).on('blur', updateMask);
+  $(this).on('blur', printValue($(this).attr('id'), $(this).val()));
+
+}
+$('#telefone').on('blur', updateMask);
+$("#certificado-form").validate({
+  rules: {
+    telefone: {
+      minlength: 10
+    }
+  },
+  messages: {
+    nome: {
+      required: "Campo obrigatório"
+    },
+    email: {
+      email: "É necessário um formato válido de e-mail (contato@domcasero.com.br)",
+      required: "Campo obrigatório"
+    },
+    telefone: {
+      required: "Campo obrigatório",
+      minlength: "Telefone precisa ter ao menos 10 dígitos"
+
+    },
+    assunto: {
+      required: "Campo obrigatório"
+    },
+    mensagem: {
+      required: "Campo obrigatório"
+    },
+  },
+  submitHandler: function(form) {
+    registrar(form);
+  }
+});
+
+function registrar(form) {
+  data = JSON.stringify($(form).serializeArray()); //  <-----------
+  sessionStorage.setItem('mensagem', data);
+
+  mensagemModal = new bootstrap.Modal(document.getElementById("registro"), {});
+  mensagemModal.show();
+  recuperar();
+  return false; //don't submit
+}
+
+function recuperar() {
+  retorno = JSON.parse(sessionStorage.mensagem);
+  $('#certificado-form').addClass('d-none');
+  $('#dados').removeClass('d-none');
+  console.log(retorno);
+  for (var campo in retorno) {
+    htmlCampo = '<h4><b>' + retorno[campo].name + '</b>: ' + retorno[campo].value + '</h4>';
+    $('#retorno').append(htmlCampo);
+  }
+
+}
+
+</script>
+
+<style>
+#retorno h4 b{
+  text-transform: capitalize;
+}
+</style>
