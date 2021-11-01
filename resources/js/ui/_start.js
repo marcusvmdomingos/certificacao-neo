@@ -46,10 +46,15 @@ require('./modules/policy');
 //--------------------[ MultiCD ]--------------------//
 require('./modules/multiCd');
 
+//--------------------[ Custom JS ]----------------//
+require('../functions/certificado-front');
+
 //--------------------[ Start Document ]--------------------//
 $(document).ready(function(){
     "use strict";    
 });
+
+
 
 window.imgError = function imgError(event) {
     $(event).attr('data-old-src', $(event).attr('src'));
